@@ -18,6 +18,9 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      - name: Make gradlew executable
+        if: runner.os != 'Windows'
+        run: chmod +x gradlew
       - name: Run tests (launcher + server)
         run: ./gradlew test --stacktrace
 
@@ -32,6 +35,9 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      - name: Make gradlew executable
+        if: runner.os != 'Windows'
+        run: chmod +x gradlew
       - name: Build app-image (PortalLauncher.exe) and installer
         shell: pwsh
         run: ./gradlew createDistributable packageExe --stacktrace
@@ -66,6 +72,9 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      - name: Make gradlew executable
+        if: runner.os != 'Windows'
+        run: chmod +x gradlew
       - run: ./gradlew :server:installDist --stacktrace
       - uses: actions/upload-artifact@v4
         with:
