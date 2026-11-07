@@ -1,0 +1,19 @@
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+out/
+*.class
+*.log
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+local.properties
+# Данные сервера
+server-data/
+*.db
+# Секреты
+*.env
+secrets.properties
