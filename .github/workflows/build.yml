@@ -40,7 +40,14 @@ jobs:
         run: chmod +x gradlew
       - name: Build app-image (PortalLauncher.exe) and installer
         shell: pwsh
-        run: ./gradlew createDistributable packageExe --stacktrace
+        run: |
+          for ($i = 1; $i -le 3; $i++) {
+            ./gradlew createDistributable packageExe --stacktrace
+            if ($LASTEXITCODE -eq 0) { break }
+            Write-Host "Попытка $i не удалась, повтор через 20 секунд"
+            Start-Sleep -Seconds 20
+          }
+          exit $LASTEXITCODE
       - name: Zip portable build
         shell: pwsh
         run: |
