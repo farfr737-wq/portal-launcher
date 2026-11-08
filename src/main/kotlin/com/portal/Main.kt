@@ -20,6 +20,7 @@ import com.portal.ui.PortalTheme
 import java.awt.Dimension
 
 fun main() {
+    com.portal.ui.FirstRunDialog.askIfNeeded()
     PortalPaths.ensureDirs()
     Log.init()
     Thread.setDefaultUncaughtExceptionHandler { t, e -> Log.error("Необработанная ошибка в потоке ${t.name}", e) }

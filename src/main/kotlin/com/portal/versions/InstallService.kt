@@ -6,6 +6,7 @@ import com.portal.core.sub
 import com.portal.loaders.LoaderType
 import com.portal.loaders.LoaderVersion
 import com.portal.loaders.Loaders
+import com.portal.loaders.OptiFineProvider
 import com.portal.logging.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -21,6 +22,7 @@ object InstallService {
         loader: LoaderType,
         loaderVersion: LoaderVersion?,
         report: Report,
+        optifineMod: LoaderVersion? = null,
     ): InstanceConfig = mutex.withLock {
         Log.info("Установка: Minecraft $mc, загрузчик ${loader.title} ${loaderVersion?.version ?: ""}")
         val hasLoader = loader != LoaderType.VANILLA
@@ -34,14 +36,14 @@ object InstallService {
 
         if (hasLoader) {
             val provider = Loaders.get(loader)
-            finalId = provider.install(mc, loaderVersion!!, report.sub(0.45f, 1f))
+            finalId = provider.install(mc, loaderVersion!!, report.sub(0.45f, if (optifineMod != null) 0.85f else 1f))
             resolved = VersionResolver.resolve(finalId)
         }
 
         val old = Instances.load(finalId)
         val cfg = (old ?: InstanceConfig(
             id = finalId,
-            displayName = if (hasLoader) "$mc + ${loader.title} ${loaderVersion!!.version}" else "Minecraft $mc",
+            displayName = (if (hasLoader) "$mc + ${loader.title} ${loaderVersion!!.version}" else "Minecraft $mc") + (if (optifineMod != null) " + OptiFine" else ""),
             mcVersion = mc,
             loader = loader.id,
             loaderVersion = loaderVersion?.version ?: "",
@@ -50,9 +52,19 @@ object InstallService {
             Instances.save(cfg)
             java.nio.file.Files.createDirectories(Instances.gameDir(cfg))
         }
+        var result = cfg
+        if (optifineMod != null) {
+            if (loader != LoaderType.FORGE) {
+                throw PortalException("OptiFine как мод поддерживается только вместе с Forge", "Для ${loader.title} используйте Sodium + Iris.")
+            }
+            report("Скачивание OptiFine (мод)", 0.86f)
+            val opt = Loaders.get(LoaderType.OPTIFINE) as OptiFineProvider
+            opt.installAsMod(optifineMod, Instances.gameDir(cfg).resolve("mods"), report.sub(0.86f, 0.99f))
+            result = withContext(Dispatchers.IO) { Instances.refreshMods(cfg) }
+        }
         report("Готово", 1f)
         Log.info("Установлено: $finalId (Java ${cfg.javaMajor})")
-        cfg
+        result
     }
 
     /** Проверка и докачка файлов версии (вручную, с хэшами). */

@@ -135,6 +135,22 @@ private fun InstanceSettings(vm: AppViewModel, cfg: InstanceConfig) {
     }
 
     Panel(Modifier.fillMaxWidth()) {
+        H2("Скин в игре")
+        Muted(
+            "В игре скин берётся по аккаунту. Аккаунт Microsoft показывает ваш официальный скин. У локального профиля Mojang скин не отдаёт, " +
+                "поэтому без мода видны только Стив/Алекс. Мод CustomSkinLoader показывает вам скин, выбранный на странице «Скины» " +
+                "(другие игроки на сервере его не увидят).", size = 12
+        )
+        if (cfg.loader == "vanilla" || cfg.loader == "optifine") {
+            Muted("Для Vanilla/OptiFine мод поставить нельзя. Установите версию с Forge, NeoForge, Fabric или Quilt.", size = 12)
+        } else {
+            GhostButton("Установить CustomSkinLoader", {
+                vm.runBusy("Установка CustomSkinLoader", "CustomSkinLoader установлен") { r -> com.portal.skins.SkinInGame.installMod(cfg, r) }
+            })
+        }
+    }
+
+    Panel(Modifier.fillMaxWidth()) {
         H2("Удаление")
         Muted("Файлы версии удаляются, миры и моды сохраняются, если не отметить полное удаление.", size = 12)
         if (!confirmDelete) GhostButton("Удалить версию…", { confirmDelete = true }, danger = true)
@@ -172,8 +188,22 @@ private fun InstallerPanel(vm: AppViewModel, onDone: () -> Unit) {
     var loaderVersion by remember { mutableStateOf<LoaderVersion?>(null) }
     var loaderError by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
+    var withOptifine by remember { mutableStateOf(false) }
+    var optiVersions by remember { mutableStateOf<List<LoaderVersion>?>(null) }
+    var optiVersion by remember { mutableStateOf<LoaderVersion?>(null) }
 
     val manifest = vm.manifest
+    LaunchedEffect(mc, loader) {
+        optiVersions = null; optiVersion = null
+        val m = mc ?: return@LaunchedEffect
+        if (loader != LoaderType.FORGE) { withOptifine = false; return@LaunchedEffect }
+        try {
+            val l = Loaders.get(LoaderType.OPTIFINE).versions(m.id)
+            optiVersions = l; optiVersion = l.firstOrNull()
+        } catch (e: Throwable) {
+            Log.warn("Список OptiFine не загружен: ${e.message}"); optiVersions = emptyList()
+        }
+    }
     LaunchedEffect(mc, loader) {
         loaderVersions = null; loaderVersion = null; loaderError = null
         val m = mc ?: return@LaunchedEffect
@@ -226,6 +256,21 @@ private fun InstallerPanel(vm: AppViewModel, onDone: () -> Unit) {
                     }
                 }
                 if (loader == LoaderType.OPTIFINE) Muted("OptiFine устанавливается его официальным установщиком: откроется окно, нажмите «Install».", size = 12)
+                if (loader == LoaderType.FORGE) {
+                    val ov = optiVersions
+                    when {
+                        mc == null -> {}
+                        ov == null -> Muted("Проверяю, есть ли OptiFine для ${mc!!.id}…", size = 12)
+                        ov.isEmpty() -> Muted("OptiFine для Minecraft ${mc!!.id} не найден — вместе с Forge не поставить.", size = 12)
+                        else -> {
+                            LabeledSwitch("Добавить OptiFine как мод к Forge", withOptifine, { withOptifine = it }, "OptiFine кладётся в папку mods. Нужна совместимая версия Forge — если игра не запустится, выберите другую версию Forge")
+                            if (withOptifine) PickerList(ov, optiVersion, { it.version }, { optiVersion = it }, height = 120.dp, searchable = false)
+                        }
+                    }
+                }
+                if (loader == LoaderType.FABRIC || loader == LoaderType.QUILT || loader == LoaderType.NEOFORGE) {
+                    Muted("OptiFine с ${loader.title} официально не работает. Для оптимизации и шейдеров используйте Sodium + Iris.", size = 12)
+                }
             }
             Panel(Modifier.fillMaxWidth()) {
                 H2("4. Установка")
@@ -234,10 +279,11 @@ private fun InstallerPanel(vm: AppViewModel, onDone: () -> Unit) {
                     if (m == null) "Выберите версию Minecraft"
                     else "Minecraft ${m.id} • ${loader.title}${loaderVersion?.let { " ${it.version}" } ?: ""}", size = 13
                 )
-                Muted("Будет создана отдельная папка версии: ${PortalPaths.versions}", size = 11)
-                val ready = m != null && (loader == LoaderType.VANILLA || loaderVersion != null)
+                Muted("Файлы будут сохранены в: ${PortalPaths.root}", size = 11)
+                GhostButton("Изменить папку данных", { vm.page = Page.SETTINGS })
+                val ready = m != null && (loader == LoaderType.VANILLA || loaderVersion != null) && (!withOptifine || optiVersion != null)
                 PrimaryButton("Установить", {
-                    vm.install(m!!.id, loader, if (loader == LoaderType.VANILLA) null else loaderVersion)
+                    vm.install(m!!.id, loader, if (loader == LoaderType.VANILLA) null else loaderVersion, if (loader == LoaderType.FORGE && withOptifine) optiVersion else null)
                     onDone()
                 }, Modifier.fillMaxWidth(), enabled = ready && vm.busy == null)
             }

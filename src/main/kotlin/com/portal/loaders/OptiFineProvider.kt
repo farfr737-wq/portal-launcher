@@ -99,6 +99,16 @@ class OptiFineProvider : LoaderProvider {
         return newId
     }
 
+    /** OptiFine как обычный мод (для Forge): скачивает jar и кладёт его в папку mods. */
+    suspend fun installAsMod(version: LoaderVersion, modsDir: Path, report: Report) {
+        val jar = obtainJar(version.extra, report)
+        withContext(Dispatchers.IO) {
+            Files.createDirectories(modsDir)
+            Files.copy(jar, modsDir.resolve(version.extra), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            if (jar.parent == PortalPaths.tmp) Files.deleteIfExists(jar)
+        }
+    }
+
     private suspend fun obtainJar(file: String, report: Report): Path {
         // Ручной вариант: файл уже лежит в папке downloads
         val manual = PortalPaths.manualDownloads.resolve(file)

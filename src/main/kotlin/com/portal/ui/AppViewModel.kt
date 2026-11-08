@@ -123,9 +123,9 @@ class AppViewModel {
 
     fun cancelBusy() { busy?.job?.cancel() }
 
-    fun install(mc: String, loader: LoaderType, lv: LoaderVersion?) {
+    fun install(mc: String, loader: LoaderType, lv: LoaderVersion?, optifine: LoaderVersion? = null) {
         runBusy("Установка Minecraft $mc ${if (loader == LoaderType.VANILLA) "" else loader.title}".trim(), null) { report ->
-            val cfg = InstallService.install(mc, loader, lv, report)
+            val cfg = InstallService.install(mc, loader, lv, report, optifine)
             selectedId = cfg.id
             SettingsStore.update { it.copy(selectedInstanceId = cfg.id) }
             toast = "Установлено: ${cfg.displayName}"

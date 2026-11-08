@@ -14,6 +14,7 @@ import com.portal.core.string
 import com.portal.java.JavaManager
 import com.portal.logging.Log
 import com.portal.settings.SettingsStore
+import com.portal.skins.SkinInGame
 import com.portal.versions.GameFiles
 import com.portal.versions.InstanceConfig
 import com.portal.versions.Instances
@@ -58,6 +59,7 @@ object GameLauncher {
 
         val gameDir = Instances.gameDir(cfg)
         Files.createDirectories(gameDir)
+        try { SkinInGame.sync(cfg, session.username) } catch (e: Exception) { Log.warn("Не удалось подготовить скин для игры: ${e.message}") }
         val nativesDir = Instances.dir(cfg.id).resolve("natives")
         extractNatives(resolved, nativesDir)
         prepareLegacyAssets(resolved, gameDir)

@@ -9,44 +9,11 @@ import java.nio.file.Paths
  * поэтому официальные установщики Forge/NeoForge работают прямо в нём.
  */
 object PortalPaths {
-    /** Файл-указатель вне папки данных: в нём записан путь, выбранный пользователем (Настройки -> Папки). */
-    val pointerFile: Path =
-        if (Os.isWindows) Paths.get(System.getenv("APPDATA") ?: System.getProperty("user.home"), "PortalLauncher-location.txt")
-        else Paths.get(System.getProperty("user.home"), ".portal-launcher-location")
+    val pointerFile: Path get() = Locations.pointerFile
+    val defaultRoot: Path get() = Locations.defaultRoot
+    fun setCustomRoot(path: String) = Locations.setCustomRoot(path)
 
-    private fun readPointer(): String? = try {
-        if (Files.isRegularFile(pointerFile)) Files.readString(pointerFile).trim().ifBlank { null } else null
-    } catch (_: Exception) {
-        null
-    }
-
-    /** Сохраняет новую папку данных; вступает в силу после перезапуска лаунчера. Пустая строка — вернуть стандартную. */
-    fun setCustomRoot(path: String) {
-        val p = path.trim()
-        if (p.isEmpty()) {
-            Files.deleteIfExists(pointerFile)
-        } else {
-            Files.createDirectories(Paths.get(p))
-            Files.writeString(pointerFile, p)
-        }
-    }
-
-    val defaultRoot: Path =
-        if (Os.isWindows) Paths.get(System.getenv("APPDATA") ?: System.getProperty("user.home"), "PortalLauncher")
-        else Paths.get(System.getProperty("user.home"), ".portal-launcher")
-
-    /** Порядок выбора: -Dportal.home -> переменная PORTAL_HOME -> указатель из настроек -> стандартная папка. */
-    val root: Path = run {
-        val sys = System.getProperty("portal.home")
-        val env = System.getenv("PORTAL_HOME")
-        val ptr = readPointer()
-        when {
-            !sys.isNullOrBlank() -> Paths.get(sys)
-            !env.isNullOrBlank() -> Paths.get(env)
-            ptr != null -> Paths.get(ptr)
-            else -> defaultRoot
-        }
-    }
+    val root: Path = Locations.resolveRoot()
 
     val launcher: Path = root.resolve("launcher")
     val accounts: Path = launcher.resolve("accounts")
