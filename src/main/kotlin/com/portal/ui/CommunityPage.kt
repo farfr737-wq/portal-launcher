@@ -3,6 +3,7 @@ package com.portal.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -157,7 +158,7 @@ private fun ProfileCard(u: PortalUser, vm: AppViewModel, favoriteToggle: Boolean
 }
 
 @Composable
-private fun OtherProfile(u: PortalUser, vm: AppViewModel, onFavChanged: () -> Unit) {
+private fun ColumnScope.OtherProfile(u: PortalUser, vm: AppViewModel, onFavChanged: () -> Unit) {
     var fav by remember(u.id) { mutableStateOf(SocialClient.isFavorite(u.id)) }
     val skinFile by produceSkin(u, vm)
     val img = rememberSkinImage(skinFile)
