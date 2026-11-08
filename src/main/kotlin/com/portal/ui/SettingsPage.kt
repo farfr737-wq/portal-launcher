@@ -39,6 +39,7 @@ fun SettingsPage(vm: AppViewModel) {
     var javaInput by remember(s.javaPath) { mutableStateOf(s.javaPath) }
     var javaCheck by remember { mutableStateOf<String?>(null) }
     var clientId by remember(s.msClientId) { mutableStateOf(s.msClientId) }
+    var dataDir by remember { mutableStateOf(if (PortalPaths.root == PortalPaths.defaultRoot) "" else PortalPaths.root.toString()) }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         H1("Настройки")
@@ -102,7 +103,19 @@ fun SettingsPage(vm: AppViewModel) {
 
         Panel(Modifier.fillMaxWidth()) {
             H2("Папки")
-            Muted(PortalPaths.root.toString(), size = 12)
+            Muted("Сейчас данные лежат здесь: ${PortalPaths.root}", size = 12)
+            PField(dataDir, { dataDir = it }, "Новая папка данных (например, D:\\PortalData)", Modifier.fillMaxWidth())
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                GhostButton("Выбрать папку…", { pickFolder("Выберите папку для данных Portal")?.let { dataDir = it } })
+                PrimaryButton("Сохранить папку", {
+                    try {
+                        PortalPaths.setCustomRoot(dataDir)
+                        vm.toast("Сохранено. Перезапустите лаунчер — данные будут храниться в новой папке")
+                    } catch (e: Throwable) { vm.showError(e, "Не удалось использовать эту папку") }
+                })
+                GhostButton("Сбросить на стандартную", { PortalPaths.setCustomRoot(""); dataDir = ""; vm.toast("Сброшено. Перезапустите лаунчер") })
+            }
+            Muted("Уже скачанные версии не переносятся автоматически: при желании скопируйте старую папку в новую целиком.", size = 11)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 GhostButton("Папка Portal", { openFolder(PortalPaths.root) })
                 GhostButton("Папка логов", { openFolder(PortalPaths.logs) })
@@ -134,4 +147,13 @@ fun LogsPage(vm: AppViewModel) {
             }
         }
     }
+}
+
+/** Системное окно выбора папки. Возвращает путь или null, если пользователь отменил. */
+fun pickFolder(title: String): String? {
+    val fc = javax.swing.JFileChooser()
+    fc.dialogTitle = title
+    fc.fileSelectionMode = javax.swing.JFileChooser.DIRECTORIES_ONLY
+    fc.isAcceptAllFileFilterUsed = false
+    return if (fc.showOpenDialog(null) == javax.swing.JFileChooser.APPROVE_OPTION) fc.selectedFile.absolutePath else null
 }
