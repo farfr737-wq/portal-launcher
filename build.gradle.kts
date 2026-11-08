@@ -44,8 +44,8 @@ compose.desktop {
             packageVersion = providers.gradleProperty("portal.version").get()
             description = "Portal Launcher — Minecraft Java Edition Launcher"
             vendor = "Portal"
-            // java.sql нужен для SQLite, jdk.unsupported — для Compose/Skiko, jdk.httpserver не нужен
-            modules("java.sql", "jdk.unsupported", "java.net.http", "java.naming", "jdk.crypto.ec")
+            // Включаем все модули JDK: лаунчеру нужны java.management, jdk.management (RAM), java.sql (SQLite), java.net.http и др.
+            includeAllModules = true
             windows {
                 iconFile.set(project.file("packaging/icon.ico"))
                 menuGroup = "Portal"
