@@ -27,6 +27,22 @@ data class LauncherSettings(
     val socialServerUrl: String = "",
     val portalUserId: String = "",
     val msClientId: String = "",
+    val cfApiKey: String = "",
+    // Оформление
+    val language: String = "ru",
+    val colorBg: String = "",                // "#RRGGBB", пусто = по умолчанию
+    val colorPanel: String = "",
+    val colorPanel2: String = "",
+    val colorAccent: String = "",
+    val colorButton: String = "",
+    val colorText: String = "",
+    val colorMuted: String = "",
+    val colorOutline: String = "",
+    val appIcon: String = "",                // "", имя встроенной иконки или "custom"
+    val wallpaper: String = "",              // "", имя встроенных обоев (w01…) или "custom"
+    val wallpaperDim: Int = 55,              // затемнение обоев, %
+    val wallpaperEverywhere: Boolean = true, // фон под всеми страницами, а не только на главной
+    val assetRev: Int = 0,                   // растёт при замене своей картинки — сбрасывает кэш
 )
 
 /** Настройки хранятся в одном JSON-файле, запись — только при изменении (без фонового опроса). */
@@ -36,10 +52,14 @@ object SettingsStore {
 
     val value: LauncherSettings get() = _state.value
 
+    /** Вызывается после каждого изменения (интерфейс подписывается на тему и язык). */
+    @Volatile var onChange: ((LauncherSettings) -> Unit)? = null
+
     fun load() {
         try {
             if (Files.isRegularFile(PortalPaths.settingsFile)) {
                 _state.value = PortalJson.decodeFromString(Files.readString(PortalPaths.settingsFile))
+                onChange?.invoke(_state.value)
             }
         } catch (e: Exception) {
             Log.error("Не удалось прочитать settings.json, используются значения по умолчанию", e)
@@ -50,6 +70,7 @@ object SettingsStore {
     fun update(block: (LauncherSettings) -> LauncherSettings) {
         val next = block(_state.value)
         _state.value = next
+        onChange?.invoke(next)
         try {
             PortalPaths.settingsFile.writeTextAtomic(PortalJson.encodeToString(LauncherSettings.serializer(), next))
         } catch (e: Exception) {

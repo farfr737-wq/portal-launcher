@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 enum class Page(val title: String) {
-    HOME("Главная"), VERSIONS("Версии"), SKINS("Скины"), COMMUNITY("Сообщество"), SETTINGS("Настройки"), LOGS("Логи")
+    HOME("Главная"), VERSIONS("Версии"), CONTENT("Контент"), SKINS("Скины"), COMMUNITY("Сообщество"), SETTINGS("Настройки"), LOGS("Логи")
 }
 
 class UiError(val title: String, val hint: String?, val action: ErrorAction?)

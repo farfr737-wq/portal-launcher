@@ -39,10 +39,13 @@ fun SettingsPage(vm: AppViewModel) {
     var javaInput by remember(s.javaPath) { mutableStateOf(s.javaPath) }
     var javaCheck by remember { mutableStateOf<String?>(null) }
     var clientId by remember(s.msClientId) { mutableStateOf(s.msClientId) }
+    var cfKey by remember(s.cfApiKey) { mutableStateOf(s.cfApiKey) }
     var dataDir by remember { mutableStateOf(if (PortalPaths.root == PortalPaths.defaultRoot) "" else PortalPaths.root.toString()) }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         H1("Настройки")
+
+        AppearancePanels(vm, s)
 
         Panel(Modifier.fillMaxWidth()) {
             H2("Загрузки и производительность")
@@ -98,7 +101,9 @@ fun SettingsPage(vm: AppViewModel) {
             Muted("Для входа через Microsoft нужен собственный Azure client_id (инструкция в README).", size = 12)
             PField(clientId, { clientId = it }, "Azure Application (client) ID", Modifier.fillMaxWidth())
             PField(s.socialServerUrl, { v -> SettingsStore.update { it.copy(socialServerUrl = v.trim()) } }, "Адрес сервера Portal", Modifier.fillMaxWidth())
-            PrimaryButton("Сохранить Client ID", { SettingsStore.update { it.copy(msClientId = clientId.trim()) }; vm.toast("Сохранено") })
+            Muted("Ключ API CurseForge нужен для каталога CurseForge во вкладке «Контент» (бесплатно: console.curseforge.com). Modrinth работает без ключа.", size = 12)
+            PField(cfKey, { cfKey = it }, "Ключ API CurseForge", Modifier.fillMaxWidth())
+            PrimaryButton("Сохранить Client ID", { SettingsStore.update { it.copy(msClientId = clientId.trim(), cfApiKey = cfKey.trim()) }; vm.toast("Сохранено") })
         }
 
         Panel(Modifier.fillMaxWidth()) {

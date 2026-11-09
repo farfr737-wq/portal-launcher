@@ -48,7 +48,12 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun App(vm: AppViewModel) {
+    val st by SettingsStore.state.collectAsState()
     Box(Modifier.fillMaxSize().background(PC.bg)) {
+        if (st.wallpaperEverywhere) Assets.wallpaper(st)?.let { wp ->
+            Image(wp, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            Box(Modifier.fillMaxSize().background(PC.bg.copy(alpha = st.wallpaperDim / 100f)))
+        }
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.weight(1f).fillMaxWidth()) {
                 Sidebar(vm)
@@ -61,6 +66,7 @@ fun App(vm: AppViewModel) {
                         when (p) {
                             Page.HOME -> HomePage(vm)
                             Page.VERSIONS -> VersionsPage(vm)
+                            Page.CONTENT -> ContentPage(vm)
                             Page.SKINS -> SkinsPage(vm)
                             Page.COMMUNITY -> CommunityPage(vm)
                             Page.SETTINGS -> SettingsPage(vm)
@@ -84,11 +90,12 @@ private fun Sidebar(vm: AppViewModel) {
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(Modifier.padding(6.dp, 6.dp, 6.dp, 18.dp), verticalAlignment = Alignment.CenterVertically) {
-            Image(Images.logo, "Portal", Modifier.size(34.dp).clip(RoundedCornerShape(8.dp)))
+            val st by SettingsStore.state.collectAsState()
+            Image(Assets.icon(st), "Portal", Modifier.size(34.dp).clip(RoundedCornerShape(8.dp)))
             Spacer(Modifier.width(10.dp))
             Text("PORTAL", color = PC.text, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
         }
-        for (p in listOf(Page.HOME, Page.VERSIONS, Page.SKINS, Page.COMMUNITY, Page.SETTINGS)) NavItem(p.title, vm.page == p) { vm.page = p }
+        for (p in listOf(Page.HOME, Page.VERSIONS, Page.CONTENT, Page.SKINS, Page.COMMUNITY, Page.SETTINGS)) NavItem(p.title, vm.page == p) { vm.page = p }
         Spacer(Modifier.weight(1f))
         NavItem(Page.LOGS.title, vm.page == Page.LOGS) { vm.page = Page.LOGS }
     }
@@ -105,7 +112,7 @@ private fun NavItem(title: String, active: Boolean, onClick: () -> Unit) {
     ) {
         Box(Modifier.width(3.dp).height(16.dp).clip(RoundedCornerShape(2.dp)).background(if (active) PC.accent else Color.Transparent))
         Spacer(Modifier.width(10.dp))
-        Text(title, color = if (active) PC.accent else PC.text, fontSize = 14.sp, fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal)
+        Text(tr(title), color = if (active) PC.accent else PC.text, fontSize = 14.sp, fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal)
     }
 }
 
@@ -117,11 +124,12 @@ private fun HomePage(vm: AppViewModel) {
     Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         H1("Главная")
         Box(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(18.dp))) {
-            Image(Images.background, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            val hs by SettingsStore.state.collectAsState()
+            Image(Assets.wallpaper(hs) ?: Images.background, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0x330B0F14), Color(0xE60B0F14)))))
             Column(Modifier.align(Alignment.BottomStart).padding(28.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (cfg == null) {
-                    Text("Версия не выбрана", color = PC.text, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                    Text(tr("Версия не выбрана"), color = PC.text, fontSize = 32.sp, fontWeight = FontWeight.Bold)
                     Muted("Установите Minecraft на странице «Версии»", size = 15)
                     Spacer(Modifier.height(10.dp))
                     PrimaryButton("Установить версию", { vm.page = Page.VERSIONS })
@@ -152,9 +160,9 @@ private fun PlayButton(vm: AppViewModel) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             val label = when (vm.gameState) {
-                GameState.IDLE -> "ИГРАТЬ"
-                GameState.PREPARING -> "ПОДГОТОВКА…"
-                GameState.RUNNING -> "ИГРА ЗАПУЩЕНА"
+                GameState.IDLE -> tr("ИГРАТЬ")
+                GameState.PREPARING -> tr("ПОДГОТОВКА…")
+                GameState.RUNNING -> tr("ИГРА ЗАПУЩЕНА")
             }
             PrimaryButton(label, { vm.play() }, Modifier.width(220.dp).height(52.dp), enabled = vm.gameState == GameState.IDLE)
             if (vm.gameState != GameState.IDLE) Text(vm.gameStatus, color = PC.text, fontSize = 14.sp)
@@ -185,7 +193,7 @@ private fun BottomBar(vm: AppViewModel) {
             Spacer(Modifier.width(10.dp))
             Column {
                 if (acc != null) PortalNick(acc.username)
-                else Text("Нет профиля", color = PC.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                else Text(tr("Нет профиля"), color = PC.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 Muted(
                     when {
                         acc == null -> "Нажмите, чтобы добавить"
@@ -212,7 +220,7 @@ private fun BusyOverlay(vm: AppViewModel) {
     Box(Modifier.fillMaxSize().background(Color(0xB3000000)).clickable(enabled = true) {}, contentAlignment = Alignment.Center) {
         Panel(Modifier.width(480.dp), PC.panel) {
             H2(b.title)
-            Text(b.message.ifBlank { "Подготовка…" }, color = PC.muted, fontSize = 13.sp, maxLines = 2)
+            Text(tr(b.message.ifBlank { "Подготовка…" }), color = PC.muted, fontSize = 13.sp, maxLines = 2)
             ProgressLine(b.fraction)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Muted(b.fraction?.let { "${(it * 100).toInt()}%" } ?: "")
@@ -235,8 +243,8 @@ private fun ErrorDialog(vm: AppViewModel) {
             else TextButton({ vm.error = null }) { Text("OK", color = PC.accent) }
         },
         dismissButton = {
-            if (e.action != null) TextButton({ vm.error = null }) { Text("Закрыть", color = PC.muted) }
-            else TextButton({ vm.error = null; vm.page = Page.LOGS }) { Text("Открыть логи", color = PC.muted) }
+            if (e.action != null) TextButton({ vm.error = null }) { Text(tr("Закрыть"), color = PC.muted) }
+            else TextButton({ vm.error = null; vm.page = Page.LOGS }) { Text(tr("Открыть логи"), color = PC.muted) }
         },
     )
 }

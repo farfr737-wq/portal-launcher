@@ -7,7 +7,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import androidx.compose.ui.res.painterResource
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import com.portal.accounts.AccountStore
 import com.portal.cache.CacheManager
 import com.portal.core.Database
@@ -25,6 +27,7 @@ fun main() {
     Log.init()
     Thread.setDefaultUncaughtExceptionHandler { t, e -> Log.error("Необработанная ошибка в потоке ${t.name}", e) }
     SettingsStore.load()
+    com.portal.ui.PC.bind()
     AccountStore.load()
 
     // Очистка временных файлов при старте (если включена) и контроль размера кэша — один раз, без фоновых таймеров
@@ -39,6 +42,8 @@ fun main() {
 
     application {
         val vm = remember { AppViewModel() }
+        val st by SettingsStore.state.collectAsState()
+        val windowIcon = remember(st.appIcon, st.assetRev) { BitmapPainter(com.portal.ui.Assets.icon(st)) }
         LaunchedEffect(Unit) { vm.start() }
         Window(
             onCloseRequest = {
@@ -47,7 +52,7 @@ fun main() {
                 exitApplication()
             },
             title = "Portal Launcher",
-            icon = painterResource("images/logo-256.png"),
+            icon = windowIcon,
             state = rememberWindowState(size = DpSize(1120.dp, 720.dp)),
         ) {
             window.minimumSize = Dimension(960, 640)
