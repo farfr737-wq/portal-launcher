@@ -3,6 +3,15 @@ package com.portal.ui
 /** Переводы. Строка: русский текст | en | zh | hi | es | fr | ar | pt | bn | de | ja | id. */
 internal object I18nData {
     private val raw = listOf(
+        "Добро пожаловать|Welcome|欢迎|स्वागत है|Bienvenido|Bienvenue|مرحباً|Bem-vindo|স্বাগতম|Willkommen|ようこそ|Selamat datang",
+        "Старт|Start|开始|शुरू|Inicio|Démarrer|البداية|Início|শুরু|Start|スタート|Mulai",
+        "Давай поставим первую версию!|Let's install your first version!|来安装第一个版本吧！|चलो पहला संस्करण इंस्टॉल करें!|¡Instalemos tu primera versión!|Installons ta première version !|لنثبّت أول إصدار!|Vamos instalar a primeira versão!|চলুন প্রথম সংস্করণ ইনস্টল করি!|Installieren wir die erste Version!|最初のバージョンを入れよう！|Ayo pasang versi pertama!",
+        "Портал готов. Погнали?|The portal is ready. Shall we go?|传送门已就绪，出发吗？|पोर्टल तैयार है। चलें?|El portal está listo. ¿Vamos?|Le portail est prêt. On y va ?|البوابة جاهزة. هيا؟|O portal está pronto. Vamos?|পোর্টাল প্রস্তুত। চলুন?|Das Portal ist bereit. Los geht's?|ポータル準備完了。行く？|Portal siap. Berangkat?",
+        "Открываю портал…|Opening the portal…|正在打开传送门…|पोर्टल खोल रहा हूँ…|Abriendo el portal…|J'ouvre le portail…|أفتح البوابة…|Abrindo o portal…|পোর্টাল খুলছি…|Ich öffne das Portal…|ポータルを開いています…|Membuka portal…",
+        "Удачной игры!|Have a great game!|游戏愉快！|खेल का आनंद लें!|¡Buena partida!|Bonne partie !|لعباً ممتعاً!|Bom jogo!|শুভ খেলা!|Viel Spaß!|楽しんで！|Selamat bermain!",
+        "Моды, шейдеры, сборки|Mods, shaders, modpacks|模组、光影、整合包|मॉड्स, शेडर्स, मॉडपैक|Mods, shaders, modpacks|Mods, shaders, modpacks|مودات ومظللات وحزم|Mods, shaders, modpacks|মড, শেডার, মডপ্যাক|Mods, Shader, Modpacks|MOD・シェーダー・パック|Mod, shader, modpack",
+        "Образ вашего героя|Your hero's look|你的英雄形象|आपके हीरो का रूप|El aspecto de tu héroe|L'apparence de ton héros|مظهر بطلك|O visual do seu herói|আপনার নায়কের রূপ|Das Aussehen deines Helden|ヒーローの見た目|Tampilan pahlawanmu",
+        "Игроки и серверы Portal|Portal players and servers|Portal 玩家和服务器|Portal खिलाड़ी और सर्वर|Jugadores y servidores de Portal|Joueurs et serveurs Portal|لاعبو وخوادم Portal|Jogadores e servidores Portal|Portal খেলোয়াড় ও সার্ভার|Portal-Spieler und -Server|Portalのプレイヤーとサーバー|Pemain dan server Portal",
         "Главная|Home|主页|होम|Inicio|Accueil|الرئيسية|Início|হোম|Start|ホーム|Beranda",
         "Версии|Versions|版本|संस्करण|Versiones|Versions|الإصدارات|Versões|সংস্করণ|Versionen|バージョン|Versi",
         "Контент|Content|内容|सामग्री|Contenido|Contenu|المحتوى|Conteúdo|কনটেন্ট|Inhalte|コンテンツ|Konten",

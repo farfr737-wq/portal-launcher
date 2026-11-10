@@ -209,7 +209,7 @@ fun ContentPage(vm: AppViewModel) {
                 item {
                     when {
                         loading -> Muted("Загрузка списка…", Modifier.padding(8.dp))
-                        results.isEmpty() && searchError == null -> Muted("Ничего не найдено", Modifier.padding(8.dp))
+                        results.isEmpty() && searchError == null -> EmptyState("Ничего не найдено")
                         hasMore -> GhostButton("Показать ещё", { search(false) })
                         else -> {}
                     }

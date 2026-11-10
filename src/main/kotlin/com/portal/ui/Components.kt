@@ -52,6 +52,7 @@ object Images {
     val portalIcon: ImageBitmap by lazy { useResource("icons/portal.png", ::loadImageBitmap) }
     val background: ImageBitmap by lazy { useResource("images/bg.png", ::loadImageBitmap) }
     val logo: ImageBitmap by lazy { useResource("images/logo-256.png", ::loadImageBitmap) }
+    val mascot: ImageBitmap by lazy { useResource("images/mascot.png", ::loadImageBitmap) }
 }
 
 /** Фирменная иконка Portal (пиксельная, поэтому без сглаживания). */

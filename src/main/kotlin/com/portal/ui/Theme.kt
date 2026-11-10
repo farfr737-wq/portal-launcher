@@ -117,7 +117,7 @@ fun GhostButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
 @Composable
 fun Panel(modifier: Modifier = Modifier, color: Color = PC.panel, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier.clip(RoundedCornerShape(14.dp)).background(color).padding(16.dp),
+        modifier.clip(RoundedCornerShape(18.dp)).background(color).glowBorder(18.dp, 0.3f).padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         content = content,
     )
